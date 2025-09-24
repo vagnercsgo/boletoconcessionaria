@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Conversor e Validador de Boletos (Concessionárias)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background: #f4f4f4;
+    }
+    h1 {
+      color: #333;
+    }
+    textarea {
+      width: 100%;
+      font-size: 16px;
+      padding: 10px;
+      margin-bottom: 10px;
+      resize: none;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+    .resultado {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 18px;
+      background: #fff;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      white-space: pre-line;
+    }
+    .ok { color: green; }
+    .erro { color: red; }
+  </style>
+</head>
+<body>
+  <h1>Conversor e Validador de Boletos de Concessionárias</h1>
+  <p>Digite o código de barras (44 dígitos) ou a linha digitável (48 dígitos):</p>
+  
+  <textarea id="entrada" rows="3" maxlength="48"></textarea><br>
+  <button onclick="converter()">Converter</button>
+  <button onclick="limpar()">Limpar</button>
+
+  <div class="resultado" id="resultado"></div>
+
+  <script>
+    // Função para calcular DV módulo 10
+    function modulo10(numero) {
+      let soma = 0;
+      let multiplicador = 2;
+
+      for (let i = numero.length - 1; i >= 0; i--) {
+        let parcial = parseInt(numero[i]) * multiplicador;
+        if (parcial > 9) {
+          parcial = Math.floor(parcial / 10) + (parcial % 10);
+        }
+        soma += parcial;
+        multiplicador = (multiplicador === 2) ? 1 : 2;
+      }
+
+      return (10 - (soma % 10)) % 10;
+    }
+
+    // Converte código de barras (44) -> linha digitável (48)
+    function barraParaLinha(barra) {
+      let linha = "";
+      for (let i = 0; i < 44; i += 11) {
+        let bloco = barra.substr(i, 11);
+        let dv = modulo10(bloco);
+        linha += bloco + dv;
+      }
+      return linha;
+    }
+
+    // Converte linha digitável (48) -> código de barras (44)
+    function linhaParaBarra(linha) {
+      let barra = "";
+      for (let i = 0; i < 48; i += 12) {
+        barra += linha.substr(i, 11); // ignora o 12º (DV)
+      }
+      return barra;
+    }
+
+    // Valida os DVs de cada bloco na linha digitável
+    function validarLinha(linha) {
+      let valido = true;
+      let mensagens = [];
+
+      for (let i = 0; i < 48; i += 12) {
+        let bloco = linha.substr(i, 11);
+        let dvInformado = parseInt(linha.substr(i + 11, 1));
+        let dvCalculado = modulo10(bloco);
+
+        if (dvInformado !== dvCalculado) {
+          valido = false;
+          mensagens.push(`Bloco ${i/12+1}: DV informado = ${dvInformado}, DV correto = ${dvCalculado}`);
+        }
+      }
+
+      return { valido, mensagens };
+    }
+
+    function converter() {
+      let entrada = document.getElementById("entrada").value.replace(/\D/g, ""); // remove não dígitos
+      let resultado = "";
+
+      if (entrada.length === 44) {
+        let linha = barraParaLinha(entrada);
+        resultado = "Linha Digitável (48 dígitos):\n" + linha;
+      } else if (entrada.length === 48) {
+        let barra = linhaParaBarra(entrada);
+        resultado = "Código de Barras (44 dígitos):\n" + barra + "\n\n";
+
+        let validacao = validarLinha(entrada);
+        if (validacao.valido) {
+          resultado += "✅ Linha digitável VÁLIDA!";
+        } else {
+          resultado += "❌ Linha digitável INVÁLIDA!\n" + validacao.mensagens.join("\n");
+        }
+      } else {
+        resultado = "Entrada inválida. Digite 44 ou 48 dígitos.";
+      }
+
+      document.getElementById("resultado").innerText = resultado;
+    }
+
+    function limpar() {
+      document.getElementById("entrada").value = "";
+      document.getElementById("resultado").innerText = "";
+    }
+  </script>
+</body>
+</html>
