@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boleto de Cobrança</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="container">
+    <header class="page-header">
+      <a class="back-link" href="index.html">← Início</a>
+      <h1>Boleto de Cobrança</h1>
+      <p>Consulta e validação de código de barras (44) e linha digitável (47).</p>
+    </header>
+
+    <section class="card">
+      <label for="entrada"><strong>Código ou linha digitável</strong></label>
+      <textarea id="entrada" maxlength="60"
+        placeholder="Ex.: 10492139191100010084910082283010615630000039907"></textarea>
+
+      <div class="actions">
+        <button onclick="consultarCobranca()">Consultar / Validar</button>
+        <button class="btn-secondary" onclick="limparCobranca()">Limpar</button>
+      </div>
+    </section>
+
+    <div id="resultado"></div>
+  </main>
+
+  <script src="js/comum.js"></script>
+  <script src="js/cobranca.js"></script>
+</body>
+</html>
